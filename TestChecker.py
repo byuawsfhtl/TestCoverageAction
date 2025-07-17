@@ -10,8 +10,7 @@ import sys
 import subprocess
 import glob
 import json
-from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 
 class TestCoverageChecker:
@@ -30,7 +29,7 @@ class TestCoverageChecker:
         """Discover test files in the repository."""
         test_files = []
         
-        print("🔍 Discovering test files...")
+        print("Discovering test files...")
         
         for test_path in self.test_paths:
             # Handle glob patterns
@@ -38,27 +37,31 @@ class TestCoverageChecker:
                 matches = glob.glob(test_path, recursive=True)
                 test_files.extend(matches)
             else:
-                # Handle directory or file paths
-                full_path = os.path.join(self.workspace_path, test_path)
-                if os.path.isdir(full_path):
-                    # Find Python test files in directory
-                    for root, dirs, files in os.walk(full_path):
-                        for file in files:
-                            if (file.startswith('test_') and file.endswith('.py')) or \
-                               (file.endswith('_test.py')) or \
-                               (file == 'tests.py'):
-                                test_files.append(os.path.join(root, file))
-                elif os.path.isfile(full_path) and full_path.endswith('.py'):
-                    test_files.append(full_path)
+                self._handle_file_paths(test_path, test_files)
         
         # Remove duplicates and non-existent files
         test_files = list(set([f for f in test_files if os.path.isfile(f)]))
         
-        print(f"📁 Found {len(test_files)} test files:")
+        print(f"Found {len(test_files)} test files:")
         for test_file in test_files:
             print(f"   • {os.path.relpath(test_file, self.workspace_path)}")
             
         return test_files
+    
+    def _handle_file_paths(self, test_path: str, test_files: List[str]):
+        full_path = os.path.join(self.workspace_path, test_path)
+        if os.path.isdir(full_path):
+            self._find_tests_in_dir(full_path, test_files)
+        elif os.path.isfile(full_path) and full_path.endswith('.py'):
+            test_files.append(full_path)
+
+    def _find_tests_in_dir(self, full_path: str, test_files: List[str]):
+        for root, _, files in os.walk(full_path):
+            for file in files:
+                if (file.startswith('test_') and file.endswith('.py')) or \
+                    (file.endswith('_test.py')) or \
+                    (file == 'tests.py'):
+                    test_files.append(os.path.join(root, file))
     
     def build_coverage_command(self, test_files: List[str]) -> List[str]:
         """Build the coverage command to run tests with coverage collection."""
@@ -88,7 +91,7 @@ class TestCoverageChecker:
     
     def run_tests_with_coverage(self, test_files: List[str]) -> Tuple[bool, str]:
         """Run tests with coverage collection."""
-        print("\n🧪 Running tests with coverage...")
+        print("\nRunning tests with coverage...")
         
         # Build and run coverage command
         cmd = self.build_coverage_command(test_files)
@@ -112,28 +115,28 @@ class TestCoverageChecker:
             return True, result.stdout + result.stderr
             
         except subprocess.CalledProcessError as e:
-            print(f"❌ Error running tests: {e}")
+            print(f"Error: Error running tests: {e}")
             return False, str(e)
         except FileNotFoundError:
-            print("❌ Coverage tool not found. Make sure 'coverage' is installed.")
+            print("Error: Coverage tool not found. Make sure 'coverage' is installed.")
             return False, "Coverage tool not found"
     
     def generate_coverage_report(self) -> Tuple[float, str]:
         """Generate and parse coverage report."""
-        print("\n📊 Generating coverage report...")
+        print("\nGenerating coverage report...")
         
         # Generate JSON report for parsing
         json_cmd = ['coverage', 'json', '-o', 'coverage.json']
         try:
             subprocess.run(json_cmd, check=True, cwd=self.workspace_path)
         except subprocess.CalledProcessError as e:
-            print(f"❌ Error generating JSON report: {e}")
+            print(f"Error: Error generating JSON report: {e}")
             return 0.0, ""
         
         # Parse JSON report
         coverage_file = os.path.join(self.workspace_path, 'coverage.json')
         if not os.path.exists(coverage_file):
-            print("❌ Coverage JSON file not found")
+            print("Error: Coverage JSON file not found")
             return 0.0, ""
             
         try:
@@ -143,7 +146,7 @@ class TestCoverageChecker:
             total_coverage = coverage_data.get('totals', {}).get('percent_covered', 0.0)
             
         except (json.JSONDecodeError, KeyError) as e:
-            print(f"❌ Error parsing coverage JSON: {e}")
+            print(f"Error: Error parsing coverage JSON: {e}")
             return 0.0, ""
         
         # Generate human-readable report
@@ -185,13 +188,13 @@ class TestCoverageChecker:
                     else:
                         f.write(f"coverage_report=terminal_output\n")
                         
-                print("✅ GitHub Action outputs set")
+                print("Success: GitHub Action outputs set")
             except Exception as e:
-                print(f"⚠️  Could not set GitHub outputs: {e}")
+                print(f"Error: Could not set GitHub outputs: {e}")
     
     def run(self) -> int:
         """Main execution method."""
-        print("🚀 Starting Test Coverage Check")
+        print("Starting Test Coverage Check...")
         print(f"   Minimum coverage required: {self.minimum_coverage}%")
         print(f"   Test paths: {', '.join(self.test_paths)}")
         print(f"   Source paths: {', '.join(self.source_paths)}")
@@ -202,7 +205,7 @@ class TestCoverageChecker:
         test_files = self.find_test_files()
         
         if not test_files:
-            print("⚠️  No test files found!")
+            print("Warning: No test files found!")
             self.set_github_outputs(0.0, "No tests found", 0)
             if self.fail_on_low_coverage:
                 return 1
@@ -211,7 +214,7 @@ class TestCoverageChecker:
         # Step 2: Run tests with coverage
         success, test_output = self.run_tests_with_coverage(test_files)
         if not success:
-            print("❌ Failed to run tests")
+            print("Error: Failed to run tests")
             self.set_github_outputs(0.0, test_output, len(test_files))
             return 1
         
@@ -219,7 +222,7 @@ class TestCoverageChecker:
         coverage_percentage, report_output = self.generate_coverage_report()
         
         # Step 4: Display results
-        print(f"\n📈 Coverage Results:")
+        print(f"\nCoverage Results:")
         print(f"   Total Coverage: {coverage_percentage:.2f}%")
         print(f"   Required Coverage: {self.minimum_coverage}%")
         print(f"\n{report_output}")
@@ -229,13 +232,13 @@ class TestCoverageChecker:
         
         # Step 6: Check if coverage meets requirements
         if coverage_percentage < self.minimum_coverage:
-            print(f"❌ Coverage {coverage_percentage:.2f}% is below required {self.minimum_coverage}%")
+            print(f"Error: Coverage {coverage_percentage:.2f}% is below required {self.minimum_coverage}%")
             if self.fail_on_low_coverage:
                 return 1
             else:
-                print("⚠️  Continuing despite low coverage (fail_on_low_coverage=false)")
+                print("Warning: Continuing despite low coverage (fail_on_low_coverage=false)")
         else:
-            print(f"✅ Coverage {coverage_percentage:.2f}% meets requirement of {self.minimum_coverage}%")
+            print(f"Success: Coverage {coverage_percentage:.2f}% meets requirement of {self.minimum_coverage}%")
         
         return 0
 
@@ -269,8 +272,8 @@ def main():
     checker = TestCoverageChecker(args)
     exit_code = checker.run()
     
-    sys.exit(exit_code)
+    return exit_code
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

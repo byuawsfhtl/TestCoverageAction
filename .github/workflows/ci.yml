@@ -28,10 +28,3 @@ jobs:
         
       - name: Check Test Coverage
         uses: ./
-        with:
-          minimum_coverage: '80'
-          test_paths: 'tests/,test/,**/test_*.py,**/tests.py'
-          source_paths: '.'
-          exclude_paths: 'tests/,test/,**/test_*.py,**/tests.py,setup.py,conftest.py'
-          fail_on_low_coverage: 'false'
-          report_format: 'term'
