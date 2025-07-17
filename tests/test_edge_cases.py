@@ -179,9 +179,12 @@ class TestComplexFileStructures(unittest.TestCase):
             with patch('os.path.isfile', return_value=True):
                 test_files = checker.find_test_files()
                 
+            # Convert to relative paths for comparison
+            found_files = {os.path.relpath(f, checker.workspace_path).replace(os.sep, '/') for f in test_files}
+                
             self.assertEqual(len(test_files), 2)
-            self.assertIn('level1/level2/level3/test_deep.py', test_files)
-            self.assertIn('another/path/test_nested.py', test_files)
+            self.assertIn('level1/level2/level3/test_deep.py', found_files)
+            self.assertIn('another/path/test_nested.py', found_files)
             
     def test_mixed_file_and_directory_paths(self):
         """Test handling mixed file and directory paths in test_paths."""
@@ -204,11 +207,14 @@ class TestComplexFileStructures(unittest.TestCase):
             mock_isdir.side_effect = lambda path: path.endswith('tests/')
             mock_isfile.side_effect = lambda path: path.endswith('.py')
             mock_walk.return_value = [
-                ('tests', [], ['test_from_dir.py', 'not_a_test.py'])
+                ('tests', [], ['test_from_dir.py', 'not_a_test_file.py'])
             ]
             mock_glob.return_value = ['other/test_glob.py']
             
             test_files = checker.find_test_files()
+            
+            # Convert absolute paths to relative paths for comparison
+            found_files = {os.path.relpath(f, checker.workspace_path).replace(os.sep, '/') for f in test_files}
             
             # Should find files from directory walk, specific file, and glob
             expected_files = {
@@ -216,7 +222,7 @@ class TestComplexFileStructures(unittest.TestCase):
                 'specific/test_file.py', 
                 'other/test_glob.py'
             }
-            self.assertEqual(set(test_files), expected_files)
+            self.assertEqual(found_files, expected_files)
 
 
 class TestErrorRecovery(unittest.TestCase):

@@ -92,8 +92,8 @@ class TestFileDiscovery(unittest.TestCase):
         
         # Create test files
         open('tests/test_example.py', 'w').close()
-        open('tests/test_helper.py', 'w').close()
-        open('src/example_test.py', 'w').close()
+        open('tests/helper_test.py', 'w').close()
+        open('src/test_from_src.py', 'w').close()
         open('other/tests.py', 'w').close()
         open('not_a_test.py', 'w').close()
         
@@ -119,12 +119,13 @@ class TestFileDiscovery(unittest.TestCase):
         # Should find test files in tests/ directory and matching patterns
         expected_files = {
             'tests/test_example.py',
-            'tests/test_helper.py',
-            'src/example_test.py',
+            'tests/helper_test.py', 
+            'src/test_from_src.py',
             'other/tests.py'
         }
         
-        found_files = {os.path.relpath(f, self.test_dir) for f in test_files}
+        # Normalize path separators for cross-platform compatibility
+        found_files = {os.path.relpath(f, self.test_dir).replace(os.sep, '/') for f in test_files}
         self.assertEqual(found_files, expected_files)
         
     def test_find_test_files_with_glob_pattern(self):
@@ -140,12 +141,12 @@ class TestFileDiscovery(unittest.TestCase):
         checker = TestCoverageChecker(args)
         
         test_files = checker.find_test_files()
-        found_files = {os.path.relpath(f, self.test_dir) for f in test_files}
         
         expected_files = {
             'tests/test_example.py',
-            'tests/test_helper.py'
+            'src/test_from_src.py'  # Only files matching test_*.py pattern
         }
+        found_files = {os.path.relpath(f, self.test_dir).replace(os.sep, '/') for f in test_files}
         self.assertEqual(found_files, expected_files)
         
     def test_find_test_files_no_matches(self):

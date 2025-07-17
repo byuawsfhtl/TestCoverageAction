@@ -42,9 +42,12 @@ class TestCoverageChecker:
         # Remove duplicates and non-existent files
         test_files = list(set([f for f in test_files if os.path.isfile(f)]))
         
+        # Convert to relative paths for display
+        relative_paths = [os.path.relpath(f, self.workspace_path).replace(os.sep, '/') for f in test_files]
+        
         print(f"Found {len(test_files)} test files:")
-        for test_file in test_files:
-            print(f"   • {os.path.relpath(test_file, self.workspace_path)}")
+        for relative_path in relative_paths:
+            print(f"   • {relative_path}")
             
         return test_files
     
@@ -116,7 +119,7 @@ class TestCoverageChecker:
             
         except subprocess.CalledProcessError as e:
             print(f"Error: Error running tests: {e}")
-            return False, str(e)
+            return False, f"Error running tests: {str(e)}"
         except FileNotFoundError:
             print("Error: Coverage tool not found. Make sure 'coverage' is installed.")
             return False, "Coverage tool not found"
