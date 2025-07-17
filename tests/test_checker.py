@@ -329,7 +329,7 @@ class TestGitHubOutputs(unittest.TestCase):
     def test_set_github_outputs_terminal(self):
         """Test setting GitHub outputs for terminal format."""
         with patch('builtins.open', mock_open()) as mock_file:
-            self.checker.set_github_outputs(85.5, "Coverage report", 5)
+            self.checker.set_github_outputs(85.5, 5)
             
             mock_file.assert_called_once_with('/tmp/github_output', 'a')
             handle = mock_file()
@@ -357,7 +357,7 @@ class TestGitHubOutputs(unittest.TestCase):
         checker = CoverageChecker(args)
         
         with patch('builtins.open', mock_open()) as mock_file:
-            checker.set_github_outputs(90.0, "HTML report", 3)
+            checker.set_github_outputs(90.0, 3)
             
             handle = mock_file()
             handle.write.assert_any_call('coverage_report=htmlcov/index.html\n')
@@ -365,7 +365,7 @@ class TestGitHubOutputs(unittest.TestCase):
     def test_set_github_outputs_no_env(self):
         """Test setting GitHub outputs when GITHUB_OUTPUT is not set."""
         # Should not raise an exception
-        self.checker.set_github_outputs(75.0, "Report", 2)
+        self.checker.set_github_outputs(75.0, 2)
 
 
 class TestMainWorkflow(unittest.TestCase):
@@ -390,7 +390,7 @@ class TestMainWorkflow(unittest.TestCase):
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 1)
-        mock_set_outputs.assert_called_once_with(0.0, "No tests found", 0)
+        mock_set_outputs.assert_called_once_with(0.0, 0)
         
     @patch('TestChecker.CoverageChecker.find_test_files')
     @patch('TestChecker.CoverageChecker.set_github_outputs')
@@ -411,7 +411,7 @@ class TestMainWorkflow(unittest.TestCase):
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 0)
-        mock_set_outputs.assert_called_once_with(0.0, "No tests found", 0)
+        mock_set_outputs.assert_called_once_with(0.0, 0)
         
     @patch('TestChecker.CoverageChecker.find_test_files')
     @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
@@ -436,12 +436,11 @@ class TestMainWorkflow(unittest.TestCase):
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 0)
-        mock_set_outputs.assert_called_once_with(85.0, "Coverage report", 1)
+        mock_set_outputs.assert_called_once_with(85.0, 1)
         
     @patch('TestChecker.CoverageChecker.find_test_files')
     @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
     @patch('TestChecker.CoverageChecker.generate_coverage_report')
-    @patch('TestChecker.CoverageChecker.set_github_outputs')
     def test_run_low_coverage_fail(self, mock_generate_report, mock_run_tests, mock_find_files):
         """Test run with coverage below threshold and fail_on_low_coverage=True."""
         mock_find_files.return_value = ['test_example.py']

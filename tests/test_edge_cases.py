@@ -291,7 +291,7 @@ class TestGitHubActionsIntegration(unittest.TestCase):
         checker = CoverageChecker(args)
         
         # Should not raise an exception
-        checker.set_github_outputs(85.0, "Test report", 5)
+        checker.set_github_outputs(85.0, 5)
         
     @patch.dict(os.environ, {'GITHUB_OUTPUT': '/tmp/readonly_file'})
     @patch('builtins.open')
@@ -310,7 +310,7 @@ class TestGitHubActionsIntegration(unittest.TestCase):
         checker = CoverageChecker(args)
         
         # Should not raise an exception, just print error
-        checker.set_github_outputs(85.0, "Test report", 5)
+        checker.set_github_outputs(85.0, 5)
 
 
 if __name__ == '__main__':
