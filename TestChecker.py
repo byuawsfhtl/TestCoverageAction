@@ -252,23 +252,37 @@ class CoverageChecker:
         github_output = os.environ.get('GITHUB_OUTPUT')
         if github_output:
             try:
-                with open(github_output, 'a') as f:
-                    f.write(f"coverage_percentage={coverage_percentage:.2f}\n")
-                    f.write(f"tests_found={tests_found}\n")
-                    
-                    # Set report file path based on format
-                    if self.report_format == 'html':
-                        f.write(f"coverage_report=htmlcov/index.html\n")
-                    elif self.report_format == 'xml':
-                        f.write(f"coverage_report=coverage.xml\n")
-                    elif self.report_format == 'json':
-                        f.write(f"coverage_report=coverage.json\n")
-                    else:
-                        f.write(f"coverage_report=terminal_output\n")
-                        
-                print("Success: GitHub Action outputs set")
+                self._report_file_path(github_output, coverage_percentage, tests_found)
             except Exception as e:
                 print(f"Error: Could not set GitHub outputs: {e}")
+        
+    def _report_file_path(self, github_output: str, coverage_percentage: float, tests_found: int) -> None:
+        """
+        Set the report file path.
+
+        Args:
+            github_output: str, the path to the GitHub output file
+            coverage_percentage: float, the coverage percentage
+            tests_found: int, the number of tests found
+
+        Returns:
+            None
+        """
+        with open(github_output, 'a') as f:
+            f.write(f"coverage_percentage={coverage_percentage:.2f}\n")
+            f.write(f"tests_found={tests_found}\n")
+            
+            # Set report file path based on format
+            if self.report_format == 'html':
+                f.write(f"coverage_report=htmlcov/index.html\n")
+            elif self.report_format == 'xml':
+                f.write(f"coverage_report=coverage.xml\n")
+            elif self.report_format == 'json':
+                f.write(f"coverage_report=coverage.json\n")
+            else:
+                f.write(f"coverage_report=terminal_output\n")
+                
+        print("Success: GitHub Action outputs set")
     
     def run(self) -> int:
         """
