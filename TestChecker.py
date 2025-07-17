@@ -13,7 +13,7 @@ import json
 from typing import List, Tuple
 
 
-class TestCoverageChecker:
+class CoverageChecker:
     """Main class for test coverage checking functionality."""
     
     def __init__(self, args):
@@ -113,8 +113,13 @@ class TestCoverageChecker:
             if result.stderr:
                 print("Errors:")
                 print(result.stderr)
+            
+            # Check if tests passed (return code 0 means success)
+            if result.returncode != 0:
+                print(f"Error: Tests failed with return code {result.returncode}")
+                return False, result.stdout + result.stderr
                 
-            # Tests can fail but we still want coverage report
+            print("Success: All tests passed!")
             return True, result.stdout + result.stderr
             
         except subprocess.CalledProcessError as e:
@@ -217,7 +222,7 @@ class TestCoverageChecker:
         # Step 2: Run tests with coverage
         success, test_output = self.run_tests_with_coverage(test_files)
         if not success:
-            print("Error: Failed to run tests")
+            print("Error: Tests failed or could not be run")
             self.set_github_outputs(0.0, test_output, len(test_files))
             return 1
         
@@ -272,7 +277,7 @@ def main():
     
     args = parser.parse_args()
     
-    checker = TestCoverageChecker(args)
+    checker = CoverageChecker(args)
     exit_code = checker.run()
     
     return exit_code

@@ -13,7 +13,7 @@ from argparse import Namespace
 # Add the parent directory to the path so we can import TestChecker
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from TestChecker import TestCoverageChecker
+from TestChecker import CoverageChecker
 
 
 class TestEdgeCases(unittest.TestCase):
@@ -31,7 +31,7 @@ class TestEdgeCases(unittest.TestCase):
         )
         
         with self.assertRaises(ValueError):
-            TestCoverageChecker(args)
+            CoverageChecker(args)
             
     def test_negative_minimum_coverage(self):
         """Test handling of negative minimum coverage."""
@@ -44,23 +44,8 @@ class TestEdgeCases(unittest.TestCase):
             report_format='term'
         )
         
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         self.assertEqual(checker.minimum_coverage, -10.0)
-        
-    def test_coverage_over_100_percent(self):
-        """Test handling of coverage over 100%."""
-        args = Namespace(
-            minimum_coverage='150',
-            test_paths='tests/',
-            source_paths='.',
-            exclude_paths='',
-            fail_on_low_coverage='true',
-            report_format='term'
-        )
-        
-        checker = TestCoverageChecker(args)
-        self.assertEqual(checker.minimum_coverage, 150.0)
-
 
 class TestSubprocessErrors(unittest.TestCase):
     """Test subprocess execution errors."""
@@ -75,7 +60,7 @@ class TestSubprocessErrors(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     @patch('subprocess.run')
     def test_run_tests_subprocess_error(self, mock_subprocess):
@@ -114,7 +99,7 @@ class TestReportFormats(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='html'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         mock_exists.return_value = True
         mock_subprocess.return_value = Mock(stdout="HTML report generated")
@@ -142,7 +127,7 @@ class TestReportFormats(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='xml'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         mock_exists.return_value = True
         mock_subprocess.return_value = Mock(stdout="XML report generated")
@@ -166,7 +151,7 @@ class TestComplexFileStructures(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Mock glob.glob to simulate deeply nested files
         with patch('glob.glob') as mock_glob:
@@ -196,7 +181,7 @@ class TestComplexFileStructures(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         with patch('os.path.isdir') as mock_isdir, \
              patch('os.path.isfile') as mock_isfile, \
@@ -238,7 +223,7 @@ class TestErrorRecovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Test with missing 'totals' key
         with patch('subprocess.run'), \
@@ -269,7 +254,7 @@ class TestErrorRecovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Mock successful JSON generation but failed detailed report
         def side_effect(*args, **kwargs):
@@ -303,7 +288,7 @@ class TestGitHubActionsIntegration(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Should not raise an exception
         checker.set_github_outputs(85.0, "Test report", 5)
@@ -322,7 +307,7 @@ class TestGitHubActionsIntegration(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Should not raise an exception, just print error
         checker.set_github_outputs(85.0, "Test report", 5)

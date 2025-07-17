@@ -15,11 +15,11 @@ import subprocess
 # Add the parent directory to the path so we can import TestChecker
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from TestChecker import TestCoverageChecker, main
+from TestChecker import CoverageChecker, main
 
 
-class TestTestCoverageChecker(unittest.TestCase):
-    """Test the TestCoverageChecker class."""
+class TestCoverageChecker(unittest.TestCase):
+    """Test the CoverageChecker class."""
     
     def setUp(self):
         """Set up test fixtures."""
@@ -31,7 +31,7 @@ class TestTestCoverageChecker(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     def test_init_with_valid_args(self):
         """Test initialization with valid arguments."""
@@ -52,7 +52,7 @@ class TestTestCoverageChecker(unittest.TestCase):
             fail_on_low_coverage='false',
             report_format='html'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         self.assertEqual(checker.minimum_coverage, 70.0)
         self.assertFalse(checker.fail_on_low_coverage)
@@ -68,7 +68,7 @@ class TestTestCoverageChecker(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='json'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         # Should filter out empty strings
         self.assertEqual(checker.test_paths, ['tests/', '**/test_*.py'])
@@ -105,7 +105,7 @@ class TestFileDiscovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     def tearDown(self):
         """Clean up test fixtures."""
@@ -138,7 +138,7 @@ class TestFileDiscovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         test_files = checker.find_test_files()
         
@@ -159,7 +159,7 @@ class TestFileDiscovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         test_files = checker.find_test_files()
         self.assertEqual(test_files, [])
@@ -174,7 +174,7 @@ class TestFileDiscovery(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         test_files = checker.find_test_files()
         self.assertEqual(len(test_files), 1)
@@ -194,7 +194,7 @@ class TestCoverageCommands(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     def test_build_coverage_command_with_test_files(self):
         """Test building coverage command when test files are provided."""
@@ -238,7 +238,7 @@ class TestCoverageCommands(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         test_files = ['tests/test_example.py']
         cmd = checker.build_coverage_command(test_files)
@@ -259,7 +259,7 @@ class TestCoverageReporting(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     @patch('subprocess.run')
     @patch('os.path.exists')
@@ -322,7 +322,7 @@ class TestGitHubOutputs(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        self.checker = TestCoverageChecker(self.test_args)
+        self.checker = CoverageChecker(self.test_args)
         
     @patch.dict(os.environ, {'GITHUB_OUTPUT': '/tmp/github_output'})
     @patch('builtins.open', mock_open())
@@ -354,7 +354,7 @@ class TestGitHubOutputs(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='html'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         with patch('builtins.open', mock_open()) as mock_file:
             checker.set_github_outputs(90.0, "HTML report", 3)
@@ -371,8 +371,8 @@ class TestGitHubOutputs(unittest.TestCase):
 class TestMainWorkflow(unittest.TestCase):
     """Test the main workflow and integration."""
     
-    @patch('TestChecker.TestCoverageChecker.find_test_files')
-    @patch('TestChecker.TestCoverageChecker.set_github_outputs')
+    @patch('TestChecker.CoverageChecker.find_test_files')
+    @patch('TestChecker.CoverageChecker.set_github_outputs')
     def test_run_no_test_files_fail_on_low_coverage(self, mock_set_outputs, mock_find_files):
         """Test run method when no test files found and fail_on_low_coverage is True."""
         mock_find_files.return_value = []
@@ -385,15 +385,15 @@ class TestMainWorkflow(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 1)
         mock_set_outputs.assert_called_once_with(0.0, "No tests found", 0)
         
-    @patch('TestChecker.TestCoverageChecker.find_test_files')
-    @patch('TestChecker.TestCoverageChecker.set_github_outputs')
+    @patch('TestChecker.CoverageChecker.find_test_files')
+    @patch('TestChecker.CoverageChecker.set_github_outputs')
     def test_run_no_test_files_continue_on_low_coverage(self, mock_set_outputs, mock_find_files):
         """Test run method when no test files found and fail_on_low_coverage is False."""
         mock_find_files.return_value = []
@@ -406,17 +406,17 @@ class TestMainWorkflow(unittest.TestCase):
             fail_on_low_coverage='false',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 0)
         mock_set_outputs.assert_called_once_with(0.0, "No tests found", 0)
         
-    @patch('TestChecker.TestCoverageChecker.find_test_files')
-    @patch('TestChecker.TestCoverageChecker.run_tests_with_coverage')
-    @patch('TestChecker.TestCoverageChecker.generate_coverage_report')
-    @patch('TestChecker.TestCoverageChecker.set_github_outputs')
+    @patch('TestChecker.CoverageChecker.find_test_files')
+    @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
+    @patch('TestChecker.CoverageChecker.generate_coverage_report')
+    @patch('TestChecker.CoverageChecker.set_github_outputs')
     def test_run_successful_coverage(self, mock_set_outputs, mock_generate_report, 
                                    mock_run_tests, mock_find_files):
         """Test successful run with coverage above threshold."""
@@ -432,17 +432,17 @@ class TestMainWorkflow(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 0)
         mock_set_outputs.assert_called_once_with(85.0, "Coverage report", 1)
         
-    @patch('TestChecker.TestCoverageChecker.find_test_files')
-    @patch('TestChecker.TestCoverageChecker.run_tests_with_coverage')
-    @patch('TestChecker.TestCoverageChecker.generate_coverage_report')
-    @patch('TestChecker.TestCoverageChecker.set_github_outputs')
+    @patch('TestChecker.CoverageChecker.find_test_files')
+    @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
+    @patch('TestChecker.CoverageChecker.generate_coverage_report')
+    @patch('TestChecker.CoverageChecker.set_github_outputs')
     def test_run_low_coverage_fail(self, mock_set_outputs, mock_generate_report, 
                                  mock_run_tests, mock_find_files):
         """Test run with coverage below threshold and fail_on_low_coverage=True."""
@@ -458,14 +458,14 @@ class TestMainWorkflow(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         exit_code = checker.run()
         
         self.assertEqual(exit_code, 1)
         
-    @patch('TestChecker.TestCoverageChecker.find_test_files')
-    @patch('TestChecker.TestCoverageChecker.run_tests_with_coverage')
+    @patch('TestChecker.CoverageChecker.find_test_files')
+    @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
     def test_run_test_execution_failure(self, mock_run_tests, mock_find_files):
         """Test run when test execution fails."""
         mock_find_files.return_value = ['test_example.py']
@@ -479,7 +479,7 @@ class TestMainWorkflow(unittest.TestCase):
             fail_on_low_coverage='true',
             report_format='term'
         )
-        checker = TestCoverageChecker(args)
+        checker = CoverageChecker(args)
         
         exit_code = checker.run()
         
@@ -490,7 +490,7 @@ class TestMainFunction(unittest.TestCase):
     """Test the main function and argument parsing."""
     
     @patch('sys.argv', ['TestChecker.py', '--minimum-coverage', '90'])
-    @patch('TestChecker.TestCoverageChecker.run')
+    @patch('TestChecker.CoverageChecker.run')
     def test_main_with_custom_coverage(self, mock_run):
         """Test main function with custom minimum coverage."""
         mock_run.return_value = 0
@@ -501,7 +501,7 @@ class TestMainFunction(unittest.TestCase):
         mock_run.assert_called_once()
         
     @patch('sys.argv', ['TestChecker.py'])
-    @patch('TestChecker.TestCoverageChecker.run')
+    @patch('TestChecker.CoverageChecker.run')
     def test_main_with_defaults(self, mock_run):
         """Test main function with default arguments."""
         mock_run.return_value = 0
