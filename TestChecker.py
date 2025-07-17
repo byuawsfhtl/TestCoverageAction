@@ -16,7 +16,16 @@ from typing import List, Tuple
 class CoverageChecker:
     """Main class for test coverage checking functionality."""
     
-    def __init__(self, args):
+    def __init__(self, args: argparse.Namespace) -> None:
+        """
+        Initialize the CoverageChecker class.
+
+        Args:
+            args: argparse.Namespace object containing command line arguments
+
+        Returns:
+            None
+        """
         self.minimum_coverage = float(args.minimum_coverage)
         self.test_paths = [p.strip() for p in args.test_paths.split(',') if p.strip()]
         self.source_paths = [p.strip() for p in args.source_paths.split(',') if p.strip()]
@@ -25,8 +34,16 @@ class CoverageChecker:
         self.report_format = args.report_format
         self.workspace_path = os.getcwd()
         
-    def find_test_files(self) -> List[str]:
-        """Discover test files in the repository."""
+    def find_test_files(self) -> list[str]:
+        """
+        Discover test files in the repository.
+
+        Args:
+            None
+
+        Returns:
+            List[str]: List of test files found in the repository
+        """
         test_files = []
         
         print("Discovering test files...")
@@ -51,14 +68,34 @@ class CoverageChecker:
             
         return test_files
     
-    def _handle_file_paths(self, test_path: str, test_files: List[str]):
+    def _handle_file_paths(self, test_path: str, test_files: list[str]) -> None:
+        """
+        Handle file paths for test discovery.
+
+        Args:
+            test_path: str, the path to the test file or directory
+            test_files: List[str], the list of test files found so far
+
+        Returns:
+            None
+        """
         full_path = os.path.join(self.workspace_path, test_path)
         if os.path.isdir(full_path):
             self._find_tests_in_dir(full_path, test_files)
         elif os.path.isfile(full_path) and full_path.endswith('.py'):
             test_files.append(full_path)
 
-    def _find_tests_in_dir(self, full_path: str, test_files: List[str]):
+    def _find_tests_in_dir(self, full_path: str, test_files: list[str]) -> None:
+        """
+        Find tests in a directory.
+
+        Args:
+            full_path: str, the path to the directory to search
+            test_files: List[str], the list of test files found so far
+
+        Returns:
+            None
+        """
         for root, _, files in os.walk(full_path):
             for file in files:
                 if (file.startswith('test_') and file.endswith('.py')) or \
@@ -66,8 +103,16 @@ class CoverageChecker:
                     (file == 'tests.py'):
                     test_files.append(os.path.join(root, file))
     
-    def build_coverage_command(self, test_files: List[str]) -> List[str]:
-        """Build the coverage command to run tests with coverage collection."""
+    def build_coverage_command(self, test_files: list[str]) -> list[str]:
+        """
+        Build the coverage command to run tests with coverage collection.
+
+        Args:
+            test_files: List[str], the list of test files to run
+
+        Returns:
+            List[str]: The coverage command to run tests with coverage collection
+        """
         # Create source include pattern
         source_include = []
         for source_path in self.source_paths:
@@ -92,8 +137,16 @@ class CoverageChecker:
             
         return cmd
     
-    def run_tests_with_coverage(self, test_files: List[str]) -> Tuple[bool, str]:
-        """Run tests with coverage collection."""
+    def run_tests_with_coverage(self, test_files: list[str]) -> tuple[bool, str]:
+        """
+        Run tests with coverage collection.
+
+        Args:
+            test_files: List[str], the list of test files to run
+
+        Returns:
+            Tuple[bool, str]: A tuple containing a boolean indicating success and a string containing the test output
+        """
         print("\nRunning tests with coverage...")
         
         # Build and run coverage command
@@ -129,8 +182,16 @@ class CoverageChecker:
             print("Error: Coverage tool not found. Make sure 'coverage' is installed.")
             return False, "Coverage tool not found"
     
-    def generate_coverage_report(self) -> Tuple[float, str]:
-        """Generate and parse coverage report."""
+    def generate_coverage_report(self) -> tuple[float, str]:
+        """
+        Generate and parse coverage report.
+
+        Args:
+            None
+
+        Returns:
+            Tuple[float, str]: A tuple containing the coverage percentage and the coverage report
+        """
         print("\nGenerating coverage report...")
         
         # Generate JSON report for parsing
@@ -177,8 +238,17 @@ class CoverageChecker:
         
         return total_coverage, report_output
     
-    def set_github_outputs(self, coverage_percentage: float, report_output: str, tests_found: int):
-        """Set GitHub Action outputs."""
+    def set_github_outputs(self, coverage_percentage: float, tests_found: int) -> None:
+        """
+        Set GitHub Action outputs.
+
+        Args:
+            coverage_percentage: float, the coverage percentage
+            tests_found: int, the number of tests found
+
+        Returns:
+            None
+        """
         github_output = os.environ.get('GITHUB_OUTPUT')
         if github_output:
             try:
@@ -201,7 +271,15 @@ class CoverageChecker:
                 print(f"Error: Could not set GitHub outputs: {e}")
     
     def run(self) -> int:
-        """Main execution method."""
+        """
+        Main execution method.
+
+        Args:
+            None
+
+        Returns:
+            int: The exit code
+        """
         print("Starting Test Coverage Check...")
         print(f"   Minimum coverage required: {self.minimum_coverage}%")
         print(f"   Test paths: {', '.join(self.test_paths)}")
@@ -214,7 +292,7 @@ class CoverageChecker:
         
         if not test_files:
             print("Warning: No test files found!")
-            self.set_github_outputs(0.0, "No tests found", 0)
+            self.set_github_outputs(0.0, 0)
             if self.fail_on_low_coverage:
                 return 1
             return 0
@@ -223,7 +301,7 @@ class CoverageChecker:
         success, test_output = self.run_tests_with_coverage(test_files)
         if not success:
             print("Error: Tests failed or could not be run")
-            self.set_github_outputs(0.0, test_output, len(test_files))
+            self.set_github_outputs(0.0, len(test_files))
             return 1
         
         # Step 3: Generate coverage report
@@ -236,7 +314,7 @@ class CoverageChecker:
         print(f"\n{report_output}")
         
         # Step 5: Set GitHub outputs
-        self.set_github_outputs(coverage_percentage, report_output, len(test_files))
+        self.set_github_outputs(coverage_percentage, len(test_files))
         
         # Step 6: Check if coverage meets requirements
         if coverage_percentage < self.minimum_coverage:
@@ -251,29 +329,37 @@ class CoverageChecker:
         return 0
 
 
-def main():
-    """Main entry point."""
+def main() -> int:
+    """
+    Main entry point.
+
+    Args:
+        None
+
+    Returns:
+        int: The exit code
+    """
     parser = argparse.ArgumentParser(description='Test Coverage Checker for GitHub Actions')
     
     parser.add_argument('--minimum-coverage', 
-                       default='80', 
-                       help='Minimum coverage percentage required (0-100)')
+        default='80', 
+        help='Minimum coverage percentage required (0-100)')
     parser.add_argument('--test-paths', 
-                       default='tests/,test/,**/test_*.py,**/tests.py',
-                       help='Comma-separated list of test directories/files to include')
+        default='tests/,test/,**/test_*.py,**/tests.py', 
+        help='Comma-separated list of test directories/files to include')
     parser.add_argument('--source-paths', 
-                       default='.',
-                       help='Comma-separated list of source directories to analyze')
-    parser.add_argument('--exclude-paths', 
-                       default='tests/,test/,**/test_*.py,**/tests.py,setup.py,conftest.py',
-                       help='Comma-separated list of paths to exclude from coverage')
+        default='.', 
+        help='Comma-separated list of source directories to analyze')
+    parser.add_argument('--exclude-paths',  
+        default='tests/,test/,**/test_*.py,**/tests.py,setup.py,conftest.py',
+        help='Comma-separated list of paths to exclude from coverage')
     parser.add_argument('--fail-on-low-coverage', 
-                       default='true',
-                       help='Whether to fail the action if coverage is below minimum')
+        default='true',
+        help='Whether to fail the action if coverage is below minimum')
     parser.add_argument('--report-format', 
-                       default='term',
-                       choices=['term', 'html', 'xml', 'json'],
-                       help='Coverage report format')
+        default='term',
+        choices=['term', 'html', 'xml', 'json'],
+        help='Coverage report format')
     
     args = parser.parse_args()
     

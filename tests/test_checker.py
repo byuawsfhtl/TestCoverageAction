@@ -417,8 +417,7 @@ class TestMainWorkflow(unittest.TestCase):
     @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
     @patch('TestChecker.CoverageChecker.generate_coverage_report')
     @patch('TestChecker.CoverageChecker.set_github_outputs')
-    def test_run_successful_coverage(self, mock_set_outputs, mock_generate_report, 
-                                   mock_run_tests, mock_find_files):
+    def test_run_successful_coverage(self, mock_set_outputs, mock_generate_report, mock_run_tests, mock_find_files):
         """Test successful run with coverage above threshold."""
         mock_find_files.return_value = ['test_example.py']
         mock_run_tests.return_value = (True, "Tests passed")
@@ -443,8 +442,7 @@ class TestMainWorkflow(unittest.TestCase):
     @patch('TestChecker.CoverageChecker.run_tests_with_coverage')
     @patch('TestChecker.CoverageChecker.generate_coverage_report')
     @patch('TestChecker.CoverageChecker.set_github_outputs')
-    def test_run_low_coverage_fail(self, mock_set_outputs, mock_generate_report, 
-                                 mock_run_tests, mock_find_files):
+    def test_run_low_coverage_fail(self, mock_generate_report, mock_run_tests, mock_find_files):
         """Test run with coverage below threshold and fail_on_low_coverage=True."""
         mock_find_files.return_value = ['test_example.py']
         mock_run_tests.return_value = (True, "Tests passed")
