@@ -1,0 +1,64 @@
+name: 'Python Test Coverage Checker'
+description: 'Scans repository for tests, calculates test coverage, and reports coverage percentage'
+author: 'RLL TreeGrowth Team'
+
+inputs:
+  minimum_coverage:
+    description: 'Minimum coverage percentage required (0-100)'
+    required: false
+    default: '80'
+  test_paths:
+    description: 'Comma-separated list of test directories/files to include'
+    required: false
+    default: 'tests/,test/,**/test_*.py,**/tests.py'
+  source_paths:
+    description: 'Comma-separated list of source directories to analyze'
+    required: false
+    default: '.'
+  exclude_paths:
+    description: 'Comma-separated list of paths to exclude from coverage'
+    required: false
+    default: 'tests/,test/,**/test_*.py,**/tests.py,setup.py,conftest.py'
+  fail_on_low_coverage:
+    description: 'Whether to fail the action if coverage is below minimum'
+    required: false
+    default: 'true'
+  report_format:
+    description: 'Coverage report format (term, html, xml, json)'
+    required: false
+    default: 'term'
+
+outputs:
+  coverage_percentage:
+    description: 'The calculated test coverage percentage'
+    value: ${{ steps.coverage.outputs.coverage_percentage }}
+  coverage_report:
+    description: 'Path to the coverage report file'
+    value: ${{ steps.coverage.outputs.coverage_report }}
+  tests_found:
+    description: 'Number of test files found'
+    value: ${{ steps.coverage.outputs.tests_found }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      shell: bash
+      run: pip install -r ${{ github.action_path }}/requirements.txt
+    
+    - name: Run Test Coverage Check
+      id: coverage
+      shell: bash
+      run: |
+        python ${{ github.action_path }}/TestChecker.py \
+          --minimum-coverage "${{ inputs.minimum_coverage }}" \
+          --test-paths "${{ inputs.test_paths }}" \
+          --source-paths "${{ inputs.source_paths }}" \
+          --exclude-paths "${{ inputs.exclude_paths }}" \
+          --fail-on-low-coverage "${{ inputs.fail_on_low_coverage }}" \
+          --report-format "${{ inputs.report_format }}" 
