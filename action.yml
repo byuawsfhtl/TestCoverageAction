@@ -22,7 +22,7 @@ inputs:
   fail_on_low_coverage:
     description: 'Whether to fail the action if coverage is below minimum'
     required: false
-    default: 'false'
+    default: 'true'
   report_format:
     description: 'Coverage report format (term, html, xml, json)'
     required: false
