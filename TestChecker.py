@@ -121,10 +121,11 @@ class CoverageChecker:
             else:
                 source_include.append(f'--source={source_path}')
         
-        # Create exclude pattern
+        # Create exclude pattern - coverage.py expects comma-separated values for --omit
         exclude_patterns = []
-        for exclude_path in self.exclude_paths:
-            exclude_patterns.extend(['--omit', exclude_path])
+        if self.exclude_paths:
+            omit_value = ','.join(self.exclude_paths)
+            exclude_patterns = [f'--omit={omit_value}']
         
         # Build the command
         cmd = ['coverage', 'run'] + source_include + exclude_patterns
