@@ -178,8 +178,9 @@ class CoverageChecker:
         except subprocess.CalledProcessError as e:
             print(f"Error: Error running tests: {e}")
             return False, f"Error running tests: {str(e)}"
-        except FileNotFoundError:
+        except FileNotFoundError as no_file_error_details:
             print("Error: Coverage tool not found. Make sure 'coverage' is installed.")
+            print(f"Full Error Details: {no_file_error_details}")
             return False, "Coverage tool not found"
     
     def generate_coverage_report(self) -> tuple[float, str]:
