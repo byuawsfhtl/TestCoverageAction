@@ -86,3 +86,24 @@ The action consists of:
 - `action.yml` - Action metadata and interface
 - `TestChecker.py` - Main coverage checking logic
 - `requirements.txt` - Python dependencies
+
+## Running it locally
+
+From the root of the repo you're trying to check, run the following in a terminal:
+
+```cmd
+python "path-to-this-repo/TestChecker.py"
+```
+
+The `python` command uses whatever virtual environment is currently active. Before running the checker, install this action's requirements into that environment:
+
+```cmd
+pip install -r "path-to-this-repo/requirements.txt"
+```
+
+So, if I were trying to run it on TreeTapper, and both TreeTapper and TestChecker were in the same folder, I would activate TreeTapper's virtual environment and run:
+
+```cmd
+pip install -r "../TestChecker/requirements.txt"
+python "../TestChecker/StandardCheck.py"
+```

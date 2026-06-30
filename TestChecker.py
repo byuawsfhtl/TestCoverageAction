@@ -10,7 +10,6 @@ import sys
 import subprocess
 import glob
 import json
-from typing import List, Tuple
 
 
 class CoverageChecker:
@@ -275,13 +274,13 @@ class CoverageChecker:
             
             # Set report file path based on format
             if self.report_format == 'html':
-                f.write(f"coverage_report=htmlcov/index.html\n")
+                f.write("coverage_report=htmlcov/index.html\n")
             elif self.report_format == 'xml':
-                f.write(f"coverage_report=coverage.xml\n")
+                f.write("coverage_report=coverage.xml\n")
             elif self.report_format == 'json':
-                f.write(f"coverage_report=coverage.json\n")
+                f.write("coverage_report=coverage.json\n")
             else:
-                f.write(f"coverage_report=terminal_output\n")
+                f.write("coverage_report=terminal_output\n")
                 
         print("Success: GitHub Action outputs set")
     
@@ -323,7 +322,7 @@ class CoverageChecker:
         coverage_percentage, report_output = self.generate_coverage_report()
         
         # Step 4: Display results
-        print(f"\nCoverage Results:")
+        print("\nCoverage Results:")
         print(f"   Total Coverage: {coverage_percentage:.2f}%")
         print(f"   Required Coverage: {self.minimum_coverage}%")
         print(f"\n{report_output}")
